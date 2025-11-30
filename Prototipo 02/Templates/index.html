@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ACI - Ponto de Informação</title>
+    <style>
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center; 
+            height: 100vh; 
+            background-color: #f4f7f6;
+            margin: 0; color: #333;
+        }
+        h1 { font-weight: 300; }
+        #container-principal {
+            width: 90%; max-width: 600px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            padding: 30px;
+            text-align: center;
+        }
+        #botoes-container { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 15px; width: 100%;
+        }
+        .botao { 
+            background-color: #0056b3; color: white; 
+            padding: 20px; border: none; border-radius: 10px; 
+            font-size: 1.1em; cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .botao:hover { background-color: #003d82; }
+        
+        #btn-microfone { 
+            background-color: #d9534f; 
+            margin-top: 20px;
+            grid-column: 1 / -1; /* Ocupa a largura toda */
+        }
+        #btn-microfone:hover { background-color: #c9302c; }
+        #btn-microfone.ouvindo {
+            background-color: #c9302c;
+            animation: pulse 1.5s infinite;
+        }
+        
+        #area-resposta { 
+            margin-top: 25px; font-size: 1.2em; 
+            color: #555; min-height: 50px;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(217, 83, 79, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(217, 83, 79, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(217, 83, 79, 0); }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="container-principal">
+        <h1>Olá! Como posso ajudar?</h1>
+        <div id="botoes-container">
+            <button class="botao" id="btn-agenda">Agenda de Eventos</button>
+            <button class="botao" id="btn-mapa">Mapa do Campus</button>
+            <button class="botao" id="btn-faq">Perguntas Frequentes</button>
+            <button class="botao" id="btn-outro">Outra Informação</button> 
+            
+            <button class="botao" id="btn-microfone">🎤 Toque para Falar</button>
+        </div>
+
+        <div id="area-resposta">
+            <p>Aguardando seu comando...</p>
+        </div>
+    </div>
+
+    <script>
+        const areaResposta = document.getElementById('area-resposta');
+        const btnMicrofone = document.getElementById('btn-microfone');
+
+        // --- Conecta os botões de TOQUE ao Cérebro (Python) ---
+        document.querySelectorAll('.botao').forEach(button => {
+            
+            // Ignora o botão de microfone por enquanto
+            if (button.id === 'btn-microfone') return;
+
+            button.addEventListener('click', async (e) => {
+                areaResposta.innerHTML = "<p>Processando...</p>";
+                
+                // Envia o ID do botão para o Python (/api/get-info)
+                const response = await fetch('/api/get-info', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: e.target.id }) 
+                });
+                const data = await response.json();
+                
+                // Exibe a resposta que o Python mandou
+                areaResposta.innerHTML = `<p>${data.texto_resposta}</p>`;
+            });
+        });
+
+        // --- Conecta o botão de VOZ ao Cérebro (Python) ---
+        btnMicrofone.addEventListener('click', async () => {
+            // Mostra feedback visual que está ouvindo
+            btnMicrofone.classList.add('ouvindo');
+            btnMicrofone.innerText = "Ouvindo... 🎙️";
+            areaResposta.innerHTML = "<p>Estou ouvindo...</p>";
+            
+            // Chama a API de ouvir do Python (/api/ouvir)
+            const response = await fetch('/api/ouvir', { method: 'POST' });
+            const data = await response.json();
+
+            // Para o feedback visual
+            btnMicrofone.classList.remove('ouvindo');
+            btnMicrofone.innerText = "🎤 Toque para Falar";
+
+            // Exibe o que foi ouvido e a resposta
+            areaResposta.innerHTML = `
+                <p style="font-size:0.9em; color:#777;"><b>Você disse:</b> ${data.texto_ouvido || "..."}</p>
+                <p><b>Resposta:</b> ${data.texto_resposta}</p>
+            `;
+        });
+    </script>
+</body>
+</html>
