@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ISA 6.0 | Unlimited</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0f172a;
+            --glass: rgba(30, 41, 59, 0.7);
+            --border: rgba(255, 255, 255, 0.1);
+            --accent: #6366f1;
+            --success: #10b981;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: #e2e8f0;
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0; height: 100vh;
+            display: flex; justify-content: center; align-items: center;
+            overflow: hidden;
+        }
+
+        .container {
+            width: 95%; max-width: 1200px; height: 90vh;
+            background: var(--glass);
+            backdrop-filter: blur(15px);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            display: grid;
+            grid-template-columns: 280px 1fr 300px;
+            box-shadow: 0 0 50px rgba(0,0,0,0.5);
+            overflow: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar { padding: 20px; background: rgba(0,0,0,0.2); border-right: 1px solid var(--border); display: flex; flex-direction: column; }
+        .logo { font-size: 1.8rem; font-weight: bold; color: var(--accent); margin-bottom: 30px; display: flex; align-items: center; gap: 10px; }
+        .monitor-card { background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; margin-bottom: 15px; }
+        .bar-container { width: 100%; height: 6px; background: #333; border-radius: 3px; margin-top: 5px; }
+        .bar-fill { height: 100%; background: var(--accent); width: 0%; transition: 0.5s; border-radius: 3px; }
+
+        /* Chat */
+        .chat-area { position: relative; display: flex; flex-direction: column; background: rgba(0,0,0,0.1); }
+        
+        .messages {
+            flex: 1; padding: 20px;
+            overflow-y: auto; display: flex; flex-direction: column; gap: 15px;
+            /* Scrollbar bonita */
+            scrollbar-width: thin; scrollbar-color: var(--accent) transparent;
+        }
+        
+        .msg { max-width: 80%; padding: 12px 18px; border-radius: 12px; line-height: 1.5; font-size: 0.95rem; }
+        .msg-user { align-self: flex-end; background: var(--accent); color: white; border-bottom-right-radius: 2px; }
+        .msg-bot { align-self: flex-start; background: rgba(255,255,255,0.1); border-bottom-left-radius: 2px; }
+        
+        .input-box { padding: 20px; background: rgba(0,0,0,0.2); display: flex; gap: 10px; align-items: center; }
+        input { flex: 1; padding: 12px; border-radius: 8px; border: none; background: rgba(255,255,255,0.1); color: white; outline: none; }
+        .btn-mic { width: 45px; height: 45px; border-radius: 50%; border: none; background: #ef4444; color: white; cursor: pointer; transition: 0.3s; font-size: 1.2rem; }
+        .btn-mic.listening { animation: pulse 1.5s infinite; }
+
+        /* Controls */
+        .controls { padding: 20px; background: rgba(0,0,0,0.2); border-left: 1px solid var(--border); overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
+        .section-title { font-size: 0.8rem; text-transform: uppercase; color: #94a3b8; letter-spacing: 1px; }
+        .grid-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .ctrl-btn {
+            background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: #ccc;
+            padding: 15px; border-radius: 10px; cursor: pointer; transition: 0.2s;
+            display: flex; flex-direction: column; align-items: center; gap: 5px; font-size: 0.9rem;
+        }
+        .ctrl-btn:hover { background: var(--accent); color: white; transform: translateY(-2px); }
+
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(0,0,0,0); } }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="sidebar">
+            <div class="logo"><i class="fas fa-robot"></i> ISA 6.0</div>
+            
+            <div class="monitor-card">
+                <div>CPU <span id="cpuVal" style="float:right">0%</span></div>
+                <div class="bar-container"><div id="cpuBar" class="bar-fill"></div></div>
+            </div>
+            <div class="monitor-card">
+                <div>RAM <span id="ramVal" style="float:right">0%</span></div>
+                <div class="bar-container"><div id="ramBar" class="bar-fill" style="background: #a855f7;"></div></div>
+            </div>
+             <div class="monitor-card">
+                <div>BAT <span id="batVal" style="float:right">100%</span></div>
+                <div class="bar-container"><div id="batBar" class="bar-fill" style="background: #10b981;"></div></div>
+            </div>
+        </div>
+
+        <div class="chat-area">
+            <div class="messages" id="chatWindow">
+                <div class="msg msg-bot">
+                    <b>ISA 6.0 Online.</b><br>
+                    Posso abrir qualquer programa, controlar brilho e pesquisar na web.
+                </div>
+            </div>
+            <div class="input-box">
+                <button class="btn-mic" id="micBtn"><i class="fas fa-microphone"></i></button>
+                <input type="text" id="txtInput" placeholder="Ex: Abra o Spotify, Aumentar brilho...">
+            </div>
+        </div>
+
+        <div class="controls">
+            <div class="section-title">Apps</div>
+            <div class="grid-buttons">
+                <button class="ctrl-btn" onclick="send('Abrir Calculadora')"><i class="fas fa-calculator"></i> Calc</button>
+                <button class="ctrl-btn" onclick="send('Abrir Bloco de Notas')"><i class="fas fa-sticky-note"></i> Notas</button>
+                <button class="ctrl-btn" onclick="send('Abrir Paint')"><i class="fas fa-paint-brush"></i> Paint</button>
+                <button class="ctrl-btn" onclick="send('Abrir CMD')"><i class="fas fa-terminal"></i> CMD</button>
+            </div>
+
+            <div class="section-title">Controle</div>
+            <div class="grid-buttons">
+                <button class="ctrl-btn" onclick="send('Aumentar volume')"><i class="fas fa-volume-up"></i> + Vol</button>
+                <button class="ctrl-btn" onclick="send('Diminuir volume')"><i class="fas fa-volume-down"></i> - Vol</button>
+                <button class="ctrl-btn" onclick="send('Aumentar brilho')"><i class="fas fa-sun"></i> + Luz</button>
+                <button class="ctrl-btn" onclick="send('Tirar print')"><i class="fas fa-camera"></i> Print</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const chat = document.getElementById('chatWindow');
+        const input = document.getElementById('txtInput');
+
+        setInterval(() => {
+            fetch('/api/status').then(r => r.json()).then(data => {
+                document.getElementById('cpuVal').innerText = data.cpu + '%';
+                document.getElementById('cpuBar').style.width = data.cpu + '%';
+                document.getElementById('ramVal').innerText = data.ram + '%';
+                document.getElementById('ramBar').style.width = data.ram + '%';
+                document.getElementById('batVal').innerText = data.bat + '%';
+                document.getElementById('batBar').style.width = data.bat + '%';
+            });
+        }, 2000);
+
+        function addMsg(text, type) {
+            const div = document.createElement('div');
+            div.className = `msg msg-${type}`;
+            if (type === 'bot') div.innerHTML = marked.parse(text);
+            else div.innerText = text;
+            
+            chat.appendChild(div);
+            
+            // --- SCROLL AUTOMÁTICO (FIX) ---
+            setTimeout(() => {
+                chat.scrollTo({ top: chat.scrollHeight, behavior: 'smooth' });
+            }, 100);
+        }
+
+        async function send(text) {
+            if(!text) return;
+            addMsg(text, 'user');
+            input.value = '';
+            
+            try {
+                const req = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({msg: text})
+                });
+                const res = await req.json();
+                addMsg(res.response, 'bot');
+            } catch(e) {
+                addMsg("Erro no servidor.", 'bot');
+            }
+        }
+
+        input.addEventListener('keypress', (e) => { if(e.key === 'Enter') send(input.value); });
+
+        document.getElementById('micBtn').addEventListener('click', async function() {
+            this.classList.add('listening');
+            try {
+                const req = await fetch('/api/listen', {method: 'POST'});
+                const res = await req.json();
+                this.classList.remove('listening');
+                if(res.success) send(res.text);
+                else addMsg("Não ouvi.", 'bot');
+            } catch(e) { this.classList.remove('listening'); }
+        });
+    </script>
+</body>
+</html>
