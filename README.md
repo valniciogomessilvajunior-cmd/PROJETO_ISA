@@ -1,14 +1,14 @@
-#🤖 PROJETO ISA (Assistente Virtual - IFCE)
+# 🤖 PROJETO ISA (Assistente Virtual - IFCE)
 Versão Atual: ISA 6.0 (Ultimate Edition)
 
 Desenvolvido em: LabMaker - IFCE Campus Canindé
 
 Este repositório contém o código-fonte e a evolução do projeto ISA, uma assistente virtual desenvolvida em Python. O projeto explora diferentes interfaces (Desktop/Tkinter e Web/Flask) e integrações com Inteligência Artificial (Google Gemini), automação de sistema e comandos de voz.
 
-##📂 Estrutura do Projeto
+## 📂 Estrutura do Projeto
 O projeto está dividido em três fases principais de desenvolvimento:
 
-###1. 🚀 Prototipo Ultimate (Versão Final/Atual)
+### 1. 🚀 Prototipo Ultimate (Versão Final/Atual)
 A versão mais completa e estável (ISA 6.0).
 
 Interface: Web App moderno (Flask) com dashboard escuro (Dark Mode).
@@ -23,7 +23,7 @@ Automação: Abre programas (Calculadora, Bloco de Notas) e sites (YouTube, Q-Ac
 
 Interação: Suporta comandos por voz e texto.
 
-###2. 🧪 Prototipo 02
+### 2. 🧪 Prototipo 02
 Uma versão intermediária focada em interface web simplificada.
 
 Interface: Web (Flask) estilo "Totem/Quiosque".
@@ -32,14 +32,14 @@ Foco: Botões grandes para acessibilidade (Agenda, Mapa, FAQ).
 
 Funcionalidade: Respostas predefinidas e motor de voz básico.
 
-###3. 🖥️ Prototipo 01
+### 3. 🖥️ Prototipo 01
 A primeira versão desktop.
 
 Interface: GUI via Tkinter.
 
 Funcionalidade: Automação via Selenium (controle de navegador) e comandos básicos de sistema.
 
-##🛠️ Tecnologias Utilizadas
+## 🛠️ Tecnologias Utilizadas
 O projeto foi construído utilizando Python e as seguintes bibliotecas principais:
 
 Core/Web: Flask, threading
@@ -58,7 +58,7 @@ AppOpener (Abrir aplicações)
 
 Frontend: HTML5, CSS3, JavaScript (Fetch API)
 
-##⚙️ Instalação e Configuração
+## ⚙️ Instalação e Configuração
 Pré-requisitos
 Python 3.x instalado.
 
@@ -89,7 +89,7 @@ Bash
 python app.py
 Acesse no navegador: http://localhost:5000
 
-##🎮 Funcionalidades (ISA 6.0 Ultimate)
+## 🎮 Funcionalidades (ISA 6.0 Ultimate)
 Comandos de Sistema
 "Aumentar/Diminuir volume": Controla o áudio do PC.
 
@@ -107,7 +107,7 @@ Navegação
 Inteligência Artificial
 Qualquer pergunta que não seja um comando de sistema será processada pelo Google Gemini, permitindo conversas naturais, geração de textos criativos e tira-dúvidas.
 
-##📝 Autor
+## 📝 Autor
 Desenvolvido por Valnicio Gomes Silva Junior (conforme estrutura de pastas). Projeto vinculado ao IFCE Campus Canindé.
 
-##⚠️ Aviso de Segurança: Este repositório continha arquivos .env e config.json com chaves de API expostas no histórico. Recomenda-se revogar as chaves antigas e nunca comitar arquivos de credenciais em repositórios públicos.
+## ⚠️ Aviso de Segurança: Este repositório continha arquivos .env e config.json com chaves de API expostas no histórico. Recomenda-se revogar as chaves antigas e nunca comitar arquivos de credenciais em repositórios públicos.
