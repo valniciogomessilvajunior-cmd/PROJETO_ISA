@@ -3,75 +3,134 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ISA 6.0 | Unlimited</title>
+    <title>ISA 6.0 | IFCE Edition</title>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         :root {
             --bg: #0f172a;
-            --glass: rgba(30, 41, 59, 0.7);
+            --glass: rgba(30, 41, 59, 0.95);
             --border: rgba(255, 255, 255, 0.1);
-            --accent: #6366f1;
-            --success: #10b981;
+            --accent: #22c55e; /* Verde IFCE */
+            --red-ifce: #ef4444;
+            --text-gray: #94a3b8;
         }
 
         body {
             background-color: var(--bg);
+            background-image: radial-gradient(circle at 10% 20%, rgba(34, 197, 94, 0.1) 0%, transparent 20%);
             color: #e2e8f0;
             font-family: 'Segoe UI', sans-serif;
             margin: 0; height: 100vh;
             display: flex; justify-content: center; align-items: center;
-            overflow: hidden;
+            overflow: hidden; /* Impede a rolagem da página inteira */
         }
 
         .container {
-            width: 95%; max-width: 1200px; height: 90vh;
+            width: 96%; max-width: 1400px; 
+            height: 92vh; /* Altura fixa */
             background: var(--glass);
             backdrop-filter: blur(15px);
             border: 1px solid var(--border);
             border-radius: 20px;
             display: grid;
-            grid-template-columns: 280px 1fr 300px;
-            box-shadow: 0 0 50px rgba(0,0,0,0.5);
-            overflow: hidden;
+            grid-template-columns: 260px 1fr 320px;
+            box-shadow: 0 0 50px rgba(0,0,0,0.6);
+            overflow: hidden; /* Nada vaza das bordas */
         }
 
-        /* Sidebar */
-        .sidebar { padding: 20px; background: rgba(0,0,0,0.2); border-right: 1px solid var(--border); display: flex; flex-direction: column; }
-        .logo { font-size: 1.8rem; font-weight: bold; color: var(--accent); margin-bottom: 30px; display: flex; align-items: center; gap: 10px; }
-        .monitor-card { background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; margin-bottom: 15px; }
-        .bar-container { width: 100%; height: 6px; background: #333; border-radius: 3px; margin-top: 5px; }
+        /* --- SIDEBAR & CONTROLS --- */
+        .sidebar, .controls { 
+            padding: 20px; 
+            background: rgba(0,0,0,0.2); 
+            display: flex; flex-direction: column; gap: 20px;
+            overflow-y: auto; /* Permite rolagem se a lista de botões for grande */
+        }
+        .sidebar { border-right: 1px solid var(--border); }
+        .controls { border-left: 1px solid var(--border); }
+        
+        .logo { font-size: 1.5rem; font-weight: bold; color: var(--accent); display: flex; align-items: center; gap: 10px; }
+
+        /* Widget de Relógio */
+        .clock-widget {
+            background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px;
+            text-align: center; border: 1px solid var(--border);
+        }
+        .time { font-size: 2rem; font-weight: 700; color: white; letter-spacing: 1px; }
+        .date { font-size: 0.8rem; color: var(--text-gray); margin-top: 5px; text-transform: uppercase; }
+
+        /* Barras de Progresso */
+        .monitor-card { background: rgba(255,255,255,0.03); padding: 12px; border-radius: 10px; font-size: 0.9rem; }
+        .bar-container { width: 100%; height: 6px; background: #333; border-radius: 3px; margin-top: 8px; }
         .bar-fill { height: 100%; background: var(--accent); width: 0%; transition: 0.5s; border-radius: 3px; }
 
-        /* Chat */
-        .chat-area { position: relative; display: flex; flex-direction: column; background: rgba(0,0,0,0.1); }
-        
-        .messages {
-            flex: 1; padding: 20px;
-            overflow-y: auto; display: flex; flex-direction: column; gap: 15px;
-            /* Scrollbar bonita */
-            scrollbar-width: thin; scrollbar-color: var(--accent) transparent;
+        /* --- ÁREA DO CHAT (Correção de Layout) --- */
+        .chat-area { 
+            position: relative; 
+            display: flex; 
+            flex-direction: column; 
+            height: 100%; /* Ocupa 100% da altura central */
+            background: rgba(0,0,0,0.1); 
+            overflow: hidden; 
         }
         
-        .msg { max-width: 80%; padding: 12px 18px; border-radius: 12px; line-height: 1.5; font-size: 0.95rem; }
-        .msg-user { align-self: flex-end; background: var(--accent); color: white; border-bottom-right-radius: 2px; }
-        .msg-bot { align-self: flex-start; background: rgba(255,255,255,0.1); border-bottom-left-radius: 2px; }
+        .messages {
+            flex: 1; /* Ocupa todo o espaço disponível, empurrando o input para baixo */
+            padding: 25px;
+            overflow-y: auto; /* A rolagem acontece SÓ AQUI */
+            display: flex; flex-direction: column; gap: 15px;
+            scroll-behavior: smooth;
+        }
         
-        .input-box { padding: 20px; background: rgba(0,0,0,0.2); display: flex; gap: 10px; align-items: center; }
-        input { flex: 1; padding: 12px; border-radius: 8px; border: none; background: rgba(255,255,255,0.1); color: white; outline: none; }
-        .btn-mic { width: 45px; height: 45px; border-radius: 50%; border: none; background: #ef4444; color: white; cursor: pointer; transition: 0.3s; font-size: 1.2rem; }
-        .btn-mic.listening { animation: pulse 1.5s infinite; }
+        /* Barra de rolagem personalizada */
+        .messages::-webkit-scrollbar { width: 8px; }
+        .messages::-webkit-scrollbar-track { background: transparent; }
+        .messages::-webkit-scrollbar-thumb { background-color: var(--accent); border-radius: 4px; }
 
-        /* Controls */
-        .controls { padding: 20px; background: rgba(0,0,0,0.2); border-left: 1px solid var(--border); overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
-        .section-title { font-size: 0.8rem; text-transform: uppercase; color: #94a3b8; letter-spacing: 1px; }
-        .grid-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .msg { max-width: 80%; padding: 15px 20px; border-radius: 15px; line-height: 1.5; font-size: 0.95rem; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .msg-user { align-self: flex-end; background: var(--accent); color: #003300; border-bottom-right-radius: 2px; font-weight: 600; }
+        .msg-bot { align-self: flex-start; background: rgba(255,255,255,0.1); border-bottom-left-radius: 2px; border: 1px solid var(--border); }
+        
+        /* Indicador de "Digitando..." */
+        .typing-indicator { font-size: 0.8rem; color: var(--text-gray); margin-left: 20px; margin-bottom: 5px; opacity: 0; transition: opacity 0.3s; height: 15px;}
+        .typing-indicator.active { opacity: 1; }
+
+        /* Área de Input Fixa */
+        .input-box { 
+            padding: 20px; 
+            background: rgba(15, 23, 42, 0.95); /* Fundo opaco para não misturar texto */
+            display: flex; gap: 15px; align-items: center; 
+            border-top: 1px solid var(--border);
+            flex-shrink: 0; /* Impede que seja esmagado */
+        }
+        
+        input { flex: 1; padding: 15px; border-radius: 12px; border: 1px solid var(--border); background: rgba(255,255,255,0.05); color: white; outline: none; transition: 0.3s; }
+        input:focus { border-color: var(--accent); background: rgba(255,255,255,0.1); }
+        
+        .btn-mic { width: 50px; height: 50px; border-radius: 50%; border: none; background: var(--red-ifce); color: white; cursor: pointer; transition: 0.3s; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; }
+        .btn-mic:hover { transform: scale(1.1); box-shadow: 0 0 15px var(--red-ifce); }
+        .btn-mic.listening { animation: pulse 1.5s infinite; background: #ff0000; }
+
+        /* --- BOTÕES LATERAIS --- */
+        .section-header { color: var(--text-gray); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; font-weight: bold; }
+        .ifce-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+        
+        .ifce-btn {
+            background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.3); color: #e2e8f0;
+            padding: 12px; border-radius: 8px; cursor: pointer; transition: 0.2s;
+            display: flex; align-items: center; gap: 12px; text-decoration: none; font-size: 0.9rem;
+        }
+        .ifce-btn:hover { background: var(--accent); color: #003300; transform: translateX(5px); }
+        .ifce-btn.red { border-color: rgba(239, 68, 68, 0.3); background: rgba(239, 68, 68, 0.1); }
+        .ifce-btn.red:hover { background: var(--red-ifce); color: white; }
+
+        .hw-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .ctrl-btn {
             background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: #ccc;
             padding: 15px; border-radius: 10px; cursor: pointer; transition: 0.2s;
-            display: flex; flex-direction: column; align-items: center; gap: 5px; font-size: 0.9rem;
+            display: flex; flex-direction: column; align-items: center; gap: 8px; font-size: 0.85rem;
         }
-        .ctrl-btn:hover { background: var(--accent); color: white; transform: translateY(-2px); }
+        .ctrl-btn:hover { background: white; color: black; }
 
         @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(0,0,0,0); } }
     </style>
@@ -82,16 +141,23 @@
         <div class="sidebar">
             <div class="logo"><i class="fas fa-robot"></i> ISA 6.0</div>
             
+            <div class="clock-widget">
+                <div class="time" id="clockTime">--:--</div>
+                <div class="date" id="clockDate">...</div>
+            </div>
+
+            <hr style="border: 0; border-top: 1px solid var(--border); width: 100%;">
+
             <div class="monitor-card">
-                <div>CPU <span id="cpuVal" style="float:right">0%</span></div>
+                <div><i class="fas fa-microchip"></i> CPU <span id="cpuVal" style="float:right">0%</span></div>
                 <div class="bar-container"><div id="cpuBar" class="bar-fill"></div></div>
             </div>
             <div class="monitor-card">
-                <div>RAM <span id="ramVal" style="float:right">0%</span></div>
+                <div><i class="fas fa-memory"></i> RAM <span id="ramVal" style="float:right">0%</span></div>
                 <div class="bar-container"><div id="ramBar" class="bar-fill" style="background: #a855f7;"></div></div>
             </div>
              <div class="monitor-card">
-                <div>BAT <span id="batVal" style="float:right">100%</span></div>
+                <div><i class="fas fa-battery-half"></i> BAT <span id="batVal" style="float:right">100%</span></div>
                 <div class="bar-container"><div id="batBar" class="bar-fill" style="background: #10b981;"></div></div>
             </div>
         </div>
@@ -99,39 +165,80 @@
         <div class="chat-area">
             <div class="messages" id="chatWindow">
                 <div class="msg msg-bot">
-                    <b>ISA 6.0 Online.</b><br>
-                    Posso abrir qualquer programa, controlar brilho e pesquisar na web.
+                    <b>Olá! Sou a ISA 6.0 (IFCE Edition).</b><br>
+                    Estou conectada. Posso abrir o Q-Acadêmico, controlar o volume ou pesquisar para você.
                 </div>
             </div>
+            
+            <div class="typing-indicator" id="typingIndicator">
+                <i class="fas fa-circle-notch fa-spin"></i> ISA está digitando...
+            </div>
+
             <div class="input-box">
                 <button class="btn-mic" id="micBtn"><i class="fas fa-microphone"></i></button>
-                <input type="text" id="txtInput" placeholder="Ex: Abra o Spotify, Aumentar brilho...">
+                <input type="text" id="txtInput" placeholder="Digite ou fale algo...">
             </div>
         </div>
 
         <div class="controls">
-            <div class="section-title">Apps</div>
-            <div class="grid-buttons">
-                <button class="ctrl-btn" onclick="send('Abrir Calculadora')"><i class="fas fa-calculator"></i> Calc</button>
-                <button class="ctrl-btn" onclick="send('Abrir Bloco de Notas')"><i class="fas fa-sticky-note"></i> Notas</button>
-                <button class="ctrl-btn" onclick="send('Abrir Paint')"><i class="fas fa-paint-brush"></i> Paint</button>
-                <button class="ctrl-btn" onclick="send('Abrir CMD')"><i class="fas fa-terminal"></i> CMD</button>
+            
+            <div>
+                <div class="section-header"><i class="fas fa-university"></i> Portais IFCE</div>
+                <div class="ifce-grid">
+                    <a href="https://ifce.edu.br/caninde" target="_blank" class="ifce-btn">
+                        <i class="fas fa-globe"></i> Portal Canindé
+                    </a>
+                    <a href="https://qacademico.ifce.edu.br/" target="_blank" class="ifce-btn">
+                        <i class="fas fa-graduation-cap"></i> Q-Acadêmico
+                    </a>
+                    <a href="https://ifce.edu.br/caninde/biblioteca" target="_blank" class="ifce-btn">
+                        <i class="fas fa-book"></i> Biblioteca
+                    </a>
+                    <a href="https://suap.ifce.edu.br/" target="_blank" class="ifce-btn red">
+                        <i class="fas fa-lock"></i> SUAP / Admin
+                    </a>
+                </div>
             </div>
 
-            <div class="section-title">Controle</div>
-            <div class="grid-buttons">
-                <button class="ctrl-btn" onclick="send('Aumentar volume')"><i class="fas fa-volume-up"></i> + Vol</button>
-                <button class="ctrl-btn" onclick="send('Diminuir volume')"><i class="fas fa-volume-down"></i> - Vol</button>
-                <button class="ctrl-btn" onclick="send('Aumentar brilho')"><i class="fas fa-sun"></i> + Luz</button>
-                <button class="ctrl-btn" onclick="send('Tirar print')"><i class="fas fa-camera"></i> Print</button>
+            <hr style="border: 0; border-top: 1px solid var(--border);">
+
+            <div>
+                <div class="section-header">Controle de Sistema</div>
+                <div class="hw-grid">
+                    <button class="ctrl-btn" onclick="send('Aumentar volume')"><i class="fas fa-volume-up"></i> + Vol</button>
+                    <button class="ctrl-btn" onclick="send('Diminuir volume')"><i class="fas fa-volume-down"></i> - Vol</button>
+                    <button class="ctrl-btn" onclick="send('Aumentar brilho')"><i class="fas fa-sun"></i> + Luz</button>
+                    <button class="ctrl-btn" onclick="send('Diminuir brilho')"><i class="fas fa-moon"></i> - Luz</button>
+                </div>
             </div>
+
+            <div>
+                 <div class="section-header">Utilitários</div>
+                 <div class="hw-grid">
+                    <button class="ctrl-btn" onclick="send('Abrir Calculadora')"><i class="fas fa-calculator"></i> Calc</button>
+                    <button class="ctrl-btn" onclick="send('Abrir Bloco de Notas')"><i class="fas fa-sticky-note"></i> Notas</button>
+                    <button class="ctrl-btn" onclick="send('Tirar print')"><i class="fas fa-camera"></i> Print</button>
+                    <button class="ctrl-btn" onclick="send('Abrir CMD')"><i class="fas fa-terminal"></i> CMD</button>
+                 </div>
+            </div>
+
         </div>
     </div>
 
     <script>
         const chat = document.getElementById('chatWindow');
         const input = document.getElementById('txtInput');
+        const typing = document.getElementById('typingIndicator');
 
+        // RELÓGIO
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('clockTime').innerText = now.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
+            document.getElementById('clockDate').innerText = now.toLocaleDateString('pt-BR', {weekday: 'long', day: 'numeric', month: 'short'});
+        }
+        setInterval(updateClock, 1000); updateClock();
+
+        // MONITOR
         setInterval(() => {
             fetch('/api/status').then(r => r.json()).then(data => {
                 document.getElementById('cpuVal').innerText = data.cpu + '%';
@@ -141,26 +248,30 @@
                 document.getElementById('batVal').innerText = data.bat + '%';
                 document.getElementById('batBar').style.width = data.bat + '%';
             });
-        }, 2000);
+        }, 3000);
+
+        // CHAT
+        function scrollToBottom() {
+            chat.scrollTo({ top: chat.scrollHeight, behavior: 'smooth' });
+        }
 
         function addMsg(text, type) {
             const div = document.createElement('div');
             div.className = `msg msg-${type}`;
             if (type === 'bot') div.innerHTML = marked.parse(text);
             else div.innerText = text;
-            
             chat.appendChild(div);
-            
-            // --- SCROLL AUTOMÁTICO (FIX) ---
-            setTimeout(() => {
-                chat.scrollTo({ top: chat.scrollHeight, behavior: 'smooth' });
-            }, 100);
+            scrollToBottom();
         }
 
         async function send(text) {
             if(!text) return;
             addMsg(text, 'user');
             input.value = '';
+            
+            // Ativa animação "Digitando..."
+            typing.classList.add('active');
+            scrollToBottom(); // Garante que a animação apareça
             
             try {
                 const req = await fetch('/api/chat', {
@@ -169,14 +280,18 @@
                     body: JSON.stringify({msg: text})
                 });
                 const res = await req.json();
+                
+                typing.classList.remove('active'); // Remove animação
                 addMsg(res.response, 'bot');
             } catch(e) {
-                addMsg("Erro no servidor.", 'bot');
+                typing.classList.remove('active');
+                addMsg("Erro ao conectar com o servidor.", 'bot');
             }
         }
 
         input.addEventListener('keypress', (e) => { if(e.key === 'Enter') send(input.value); });
 
+        // MICROFONE
         document.getElementById('micBtn').addEventListener('click', async function() {
             this.classList.add('listening');
             try {
@@ -184,8 +299,10 @@
                 const res = await req.json();
                 this.classList.remove('listening');
                 if(res.success) send(res.text);
-                else addMsg("Não ouvi.", 'bot');
-            } catch(e) { this.classList.remove('listening'); }
+                else addMsg("Não ouvi nada. Tente novamente.", 'bot');
+            } catch(e) { 
+                this.classList.remove('listening');
+            }
         });
     </script>
 </body>
